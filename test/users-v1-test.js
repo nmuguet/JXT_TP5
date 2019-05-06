@@ -5,7 +5,7 @@ const { app } = require('../app')
 chai.should()
 chai.use(chaiHttp)
 
-let token_test = { access_token: "aaaaaaaaa.bbbbbbbbbb.cccccccc", expirity: "string" }
+let token_test = { access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTY1NTIyMjgsInVzZXJuYW1lIjoicm9zZSIsImlhdCI6MTU1NjU0ODYyOH0.D2wOzyi65qxkCTVhSHScWjpJymIwNhazZqgUQU4Xm5k", expirity: "string" }
 
 
 describe('Users tests', () => {
@@ -28,7 +28,7 @@ describe('Users tests', () => {
         done()
       })
   })
-  
+
   it('should list a SINGLE user on /v1/users/<id> GET', done => {
     chai
       .request(app)
@@ -373,56 +373,75 @@ describe('Users tests', () => {
   it('should successfully verifyaccess', done => {
     chai
       .request(app)
-      .set('Authorization', 'bearer ' + token_test.access_token)
-      .get('/v1/auth/verifyaccess')
-    res
-      .should
-      .have
-      .status(200)
-    res.should.be.json
-    res
-      .body
-      .should
-      .be
-      .a('object')
-    res
-      .body
-      .should
-      .have
-      .property('message')
+      .post('/v1/auth/login')
+      .send({ login: 'jesse', password: '1234' })
+      .end((err, res) => {
+        const token = res.body.access_token
+        chai
+          .request(app)
+          .get('/v1/auth/verifyaccess')
+          .set('Authorization', `bearer ${token}`)
+          .end((err, res) => {
+            res
+              .should
+              .have
+              .status(200)
+            res.should.be.json
+            res
+              .body
+              .should
+              .be
+              .a('object')
+            res
+              .body
+              .should
+              .have
+              .property('message')
+            done()
+          })
+      })
   })
 
   it('should fail verifyaccess', done => {
     chai
       .request(app)
-      .set('Authorization', 'bearer wrongToken')
-      .get('/v1/auth/verifyaccess')
-    res
-      .should
-      .have
-      .status(401)
-    res.should.be.json
-    res
-      .body
-      .should
-      .be
-      .a('object')
-    res
-      .body
-      .should
-      .have
-      .property('code')
-    res
-      .body
-      .should
-      .have
-      .property('type')
-    res
-      .body
-      .should
-      .have
-      .property('message')
-
+      .post('/v1/auth/login')
+      .send({ login: 'jesse', password: 'wrongpass' })
+      .end((err, res) => {
+        const token = res.body.access_token
+        chai
+          .request(app)
+          .get('/v1/auth/verifyaccess')
+          .set('Authorization', `bearer ${token}`)
+          .end((err, res) => {
+            res
+              .should
+              .have
+              .status(401)
+            res.should.be.json
+            res
+              .body
+              .should
+              .be
+              .a('object')
+            res
+              .body
+              .should
+              .have
+              .property('code')
+            res
+              .body
+              .should
+              .have
+              .property('type')
+            res
+              .body
+              .should
+              .have
+              .property('message')
+            done()
+          })
+      })
   })
 
 })

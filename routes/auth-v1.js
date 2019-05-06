@@ -27,7 +27,7 @@ router.post('/login', function (req, res, next) {
 
   /* istanbul ignore else */
   if (username && password) {
-    if (usersFound.length === 1 && usersFound.password === password) {
+    if (usersFound.length === 1 && usersFound[0].password === password) {
       let exp = Math.floor(Date.now() / 1000) + (60 * 60); // exp in 1h
       let token = jwt.sign({ exp: exp, username: username }, config.secret);
       res
@@ -42,7 +42,7 @@ router.post('/login', function (req, res, next) {
         .json({
           code: 0,
           type: "error",
-          message: 'Incorrect username or password'
+          message: 'Incorrect username or password',
         });
     }
   }
@@ -57,12 +57,10 @@ router.post('/login', function (req, res, next) {
   }
 })
 
-
-
 /* GET to check access */
 router.get('/verifyaccess', function (req, res, next) {
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
-  if (token.startsWith('Bearer ')) {
+  if (token.startsWith('bearer ')) {
     // Remove Bearer from string
     token = token.slice(7, token.length);
   }

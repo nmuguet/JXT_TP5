@@ -1,5 +1,7 @@
 const uuidv1 = require('uuid/v1')
 const tcomb = require('tcomb')
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const USER = tcomb.struct({
     id: tcomb.String,
