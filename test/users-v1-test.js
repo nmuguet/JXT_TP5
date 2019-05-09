@@ -5,9 +5,6 @@ const { app } = require('../app')
 chai.should()
 chai.use(chaiHttp)
 
-let token_test = { access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1NTY1NTIyMjgsInVzZXJuYW1lIjoicm9zZSIsImlhdCI6MTU1NjU0ODYyOH0.D2wOzyi65qxkCTVhSHScWjpJymIwNhazZqgUQU4Xm5k", expirity: "string" }
-
-
 describe('Users tests', () => {
 
   it('should list ALL users on /v1/users GET', done => {
@@ -328,6 +325,7 @@ describe('Users tests', () => {
           .property('expirity')
         done()
       })
+<<<<<<< HEAD
   })
 
   it('should fail login', done => {
