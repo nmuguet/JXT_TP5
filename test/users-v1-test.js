@@ -325,7 +325,6 @@ describe('Users tests', () => {
           .property('expirity')
         done()
       })
-<<<<<<< HEAD
   })
 
   it('should fail login', done => {
