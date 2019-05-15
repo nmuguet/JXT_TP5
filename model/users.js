@@ -1,7 +1,14 @@
 const uuidv1 = require('uuid/v1')
 const tcomb = require('tcomb')
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const config = require('../config.js');
+
+// fonction qui hash la mot de passe grace au sel
+const encryptPassword = async(password) => {
+    // cryptage avec salt round de 10 (cf hiddenSalt)
+    return await bcrypt.hash(password, config.hiddenSalt)
+}
+
 
 const USER = tcomb.struct({
     id: tcomb.String,
@@ -9,48 +16,47 @@ const USER = tcomb.struct({
     login: tcomb.String,
     age: tcomb.Number,
     password: tcomb.String
-}, {strict: true})
+}, { strict: true })
 
-const users = [
-    {
-        id: '45745c60-7b1a-11e8-9c9c-2d42b21b1a3e',
-        name: 'Pedro Ramirez',
-        login: 'pedro',
-        age: 44,
-        password: '1234'
-    }, {
-        id: '456897d-98a8-78d8-4565-2d42b21b1a3e',
-        name: 'Jesse Jones',
-        login: 'jesse',
-        age: 48,
-        password: '1234'
-    }, {
-        id: '987sd88a-45q6-78d8-4565-2d42b21b1a3e',
-        name: 'Rose Doolan',
-        login: 'rose',
-        age: 36,
-        password: '1234'
-    }, {
-        id: '654de540-877a-65e5-4565-2d42b21b1a3e',
-        name: 'Sid Ketchum',
-        login: 'sid',
-        age: 56,
-        password: '1234'
-    }
-]
+
+const users = [{
+    id: '45745c60-7b1a-11e8-9c9c-2d42b21b1a3e',
+    name: 'Pedro Ramirez',
+    login: 'pedro',
+    age: 44,
+    password: '$2b$10$PGm3Bboa1bu/b9oFsb39aOsLDoFwMA12Am9YdIgIV/f3QMA9XdnNS'
+}, {
+    id: '456897d-98a8-78d8-4565-2d42b21b1a3e',
+    name: 'Jesse Jones',
+    login: 'jesse',
+    age: 48,
+    password: '$2b$10$PGm3Bboa1bu/b9oFsb39aOsLDoFwMA12Am9YdIgIV/f3QMA9XdnNS'
+}, {
+    id: '987sd88a-45q6-78d8-4565-2d42b21b1a3e',
+    name: 'Rose Doolan',
+    login: 'rose',
+    age: 36,
+    password: '$2b$10$PGm3Bboa1bu/b9oFsb39aOsLDoFwMA12Am9YdIgIV/f3QMA9XdnNS'
+}, {
+    id: '654de540-877a-65e5-4565-2d42b21b1a3e',
+    name: 'Sid Ketchum',
+    login: 'sid',
+    age: 56,
+    password: '$2b$10$PGm3Bboa1bu/b9oFsb39aOsLDoFwMA12Am9YdIgIV/f3QMA9XdnNS'
+}]
 
 const get = (id) => {
     const usersFound = users.filter((user) => user.id === id)
-    return usersFound.length >= 1
-        ? usersFound[0]
-        : undefined
+    return usersFound.length >= 1 ?
+        usersFound[0] :
+        undefined
 }
 
-const getAll = () => {
-    return users
-}
+const getAll = () => users
 
-const add = (user) => {
+
+const add = async(user) => {
+    user['password'] = await encryptPassword(user['password'])
     const newUser = {
         ...user,
         id: uuidv1()
@@ -63,8 +69,11 @@ const add = (user) => {
     return newUser
 }
 
-const update = (id, newUserProperties) => {
+const update = async(id, newUserProperties) => {
     const usersFound = users.filter((user) => user.id === id)
+    if (newUserProperties['password']) {
+        newUserProperties['password'] = await encryptPassword(newUserProperties['password'])
+    }
 
     if (usersFound.length === 1) {
         const oldUser = usersFound[0]
@@ -99,7 +108,7 @@ const remove = (id) => {
 
 function validateUser(user) {
     let result = false
-    /* istanbul ignore else */
+        /* istanbul ignore else */
     if (user) {
         try {
             const tcombUser = USER(user)
@@ -110,6 +119,10 @@ function validateUser(user) {
     }
     return result
 }
+
+
+
+
 
 exports.get = get
 exports.getAll = getAll
