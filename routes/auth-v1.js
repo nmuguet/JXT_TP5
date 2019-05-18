@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 let usersModel = undefined
 
 
+
 /* Control usermodel initialisation */
 router.use((req, res, next) => {
     /* istanbul ignore if */
@@ -20,7 +21,7 @@ router.use((req, res, next) => {
 
 
 /* POST to login and get a token */
-router.post('/login', async(req, res, next) => {
+router.post('/login', async (req, res, next) => {
     let username = req.body.login;
     let password = req.body.password;
 
@@ -59,17 +60,16 @@ router.post('/login', async(req, res, next) => {
 })
 
 /* GET to check access */
-router.get('/verifyaccess', function(req, res, next) {
+router.get('/verifyaccess', function (req, res, next) {
     let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
-    if (token.startsWith('bearer ')) {
-        // Remove Bearer from string
-        token = token.slice(7, token.length);
-    }
-
-    /* istanbul ignore else */
-    if (token) {
+    if (token !== "undefined") {
+        if (token.startsWith('bearer ')) {
+            // Remove bearer from string
+            token = token.slice(7, token.length);
+        }
+        /* istanbul ignore else */
         try {
-            jwt.verify(token, config.secret, (err, decoded) => {
+            authModel.checkToken(token).then((err) => {
                 if (err) {
                     res
                         .status(401)
@@ -84,13 +84,12 @@ router.get('/verifyaccess', function(req, res, next) {
                         .json({
                             message: 'Token validated'
                         })
-                    next();
                 }
             });
         } catch (exc) {
             /* istanbul ignore next */
             res
-                .status(400)
+                .status(401)
                 .json({
                     code: 0,
                     type: 'error verify access',
@@ -106,7 +105,8 @@ router.get('/verifyaccess', function(req, res, next) {
 
 
 /** return a closure to initialize model */
-module.exports = (model) => {
-    usersModel = model
+module.exports = (model1, model2) => {
+    authModel = model1
+    usersModel = model2
     return router
 }
